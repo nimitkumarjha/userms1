@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WishListService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EcommerceUserManagement</a> &gt; <a href="index.source.html" class="el_package">com.infy.EcommerceUserManagement.service</a> &gt; <span class="el_source">WishListService.java</span></div><h1>WishListService.java</h1><pre class="source lang-java linenums">package com.infy.EcommerceUserManagement.service;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.infy.EcommerceUserManagement.controller.BuyerController;
+import com.infy.EcommerceUserManagement.controller.CartController;
+import com.infy.EcommerceUserManagement.dao.CartRepository;
+import com.infy.EcommerceUserManagement.dao.WishListRepository;
+import com.infy.EcommerceUserManagement.entity.WishListId;
+import com.infy.EcommerceUserManagement.entity.WishlistEntity;
+import com.infy.EcommerceUserManagement.exception.NotPrivilegeBuyerException;
+import com.infy.EcommerceUserManagement.exception.StockNotAvailableException;
+import com.infy.EcommerceUserManagement.exception.UserException;
+import com.infy.EcommerceUserManagement.exception.WishListEmptyException;
+import com.infy.EcommerceUserManagement.exception.WishlistAlreadyExist;
+import com.infy.EcommerceUserManagement.exception.WishlistNotAvailableException;
+import com.infy.EcommerceUserManagement.model.Cart;
+import com.infy.EcommerceUserManagement.model.Product;
+import com.infy.EcommerceUserManagement.model.Wishlist;
+
+@Service
+<span class="fc" id="L31">public class WishListService {</span>
+
+	@Value(&quot;${productAPIURL}&quot;)
+	public String productAPIURI;
+
+	@Autowired
+	WishListRepository wishListRepository;
+
+	@Autowired
+	CartController cartController;
+
+	@Autowired
+	BuyerController buyerController;
+
+	@Autowired
+	RestTemplate restTemplate;
+	
+	@Autowired
+	CartRepository cartRepository;
+
+	public void addToWishList(Wishlist wishlist) throws UserException {
+<span class="nc" id="L52">		WishlistEntity wishlistEntity = wishListRepository.findByIdBuyerIdAndIdProdId(wishlist.getBuyerId(),</span>
+<span class="nc" id="L53">				wishlist.getProdId());</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">		if (wishlistEntity == null) {</span>
+<span class="nc" id="L55">			WishlistEntity newwishlistEntity = new WishlistEntity(</span>
+<span class="nc" id="L56">					new WishListId(wishlist.getBuyerId(), wishlist.getProdId()));</span>
+<span class="nc" id="L57">			wishListRepository.save(newwishlistEntity);</span>
+<span class="nc" id="L58">		} else {</span>
+<span class="nc" id="L59">			throw new WishlistAlreadyExist(&quot;wishlist.ALREADY_EXISTS&quot;);</span>
+
+		}
+
+<span class="nc" id="L63">	}</span>
+
+	public void removeFromWishList(Wishlist wishlist) throws UserException {
+<span class="nc" id="L66">		WishlistEntity wishlistEntity = wishListRepository.findByIdBuyerIdAndIdProdId(wishlist.getBuyerId(),</span>
+<span class="nc" id="L67">				wishlist.getProdId());</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">		if (wishlistEntity != null) {</span>
+<span class="nc" id="L69">			wishListRepository.deleteById(new WishListId(wishlist.getBuyerId(), wishlist.getProdId()));</span>
+<span class="nc" id="L70">		} else {</span>
+<span class="nc" id="L71">			throw new WishlistNotAvailableException(&quot;wishlist.NOT_AVAILABLE&quot;);</span>
+		}
+<span class="nc" id="L73">	}</span>
+
+	public List&lt;Wishlist&gt; getAllWishList(int buyerId) throws UserException {
+<span class="nc" id="L76">		List&lt;WishlistEntity&gt; allWishlistEntity = wishListRepository.findByIdBuyerId(buyerId);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">		if (allWishlistEntity != null) {</span>
+<span class="nc" id="L78">			List&lt;Wishlist&gt; allWIshlistmodal = new ArrayList&lt;Wishlist&gt;();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">			for (WishlistEntity wishlistEntity : allWishlistEntity) {</span>
+<span class="nc" id="L80">				Wishlist wishlist = new Wishlist(wishlistEntity.getId().getBuyerId(),</span>
+<span class="nc" id="L81">						wishlistEntity.getId().getProdId());</span>
+<span class="nc" id="L82">				allWIshlistmodal.add(wishlist);</span>
+			}
+<span class="nc" id="L84">			return allWIshlistmodal;</span>
+		} else {
+<span class="nc" id="L86">			throw new WishListEmptyException(&quot;wishlist.EMPTY&quot;);</span>
+		}
+
+	}
+
+	public void wishListMoveToCart(Wishlist wishlist, int quantity) throws UserException {
+		// check the privilege
+<span class="nc" id="L93">		WishlistEntity wishlistEntity = wishListRepository.findByIdBuyerIdAndIdProdId(wishlist.getBuyerId(),</span>
+<span class="nc" id="L94">				wishlist.getProdId());</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">		if (wishlistEntity != null) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">			if (buyerController.isBuyerPrivileged(wishlist.getBuyerId())) {</span>
+
+<span class="nc" id="L98">				final String baseUrl = productAPIURI + wishlist.getProdId();</span>
+<span class="nc" id="L99">				ResponseEntity&lt;Product&gt; result = restTemplate.getForEntity(baseUrl, Product.class);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">				if (result.getBody().getStock() &gt;= quantity) {</span>
+<span class="nc" id="L101">					Cart cart = new Cart(wishlist.getBuyerId(), wishlist.getProdId(), quantity);</span>
+
+<span class="nc" id="L103">					List&lt;Cart&gt; cartlist = cartController.getAllCartItem(wishlist.getBuyerId());</span>
+
+<span class="nc bnc" id="L105" title="All 2 branches missed.">					if (cartlist.size() == 0) {</span>
+<span class="nc" id="L106">						removeFromWishList(wishlist);</span>
+<span class="nc" id="L107">						cartController.addToCart(cart);</span>
+<span class="nc" id="L108">					} else {</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">						for (Cart cart2 : cartlist) {</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">							if (cart2.getProdId() == wishlist.getProdId()) {</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">								if (cart2.getQuantity() + quantity &lt;= result.getBody().getStock()) {</span>
+<span class="nc" id="L112">									removeFromWishList(wishlist);</span>
+<span class="nc" id="L113">									cart2.setQuantity(cart2.getQuantity() + quantity);</span>
+<span class="nc" id="L114">									cartController.addToCart(cart2);</span>
+									
+
+<span class="nc" id="L117">								} else {</span>
+<span class="nc" id="L118">									throw new StockNotAvailableException(&quot;wishlist.STOCK_NOT_AVAILABLE&quot;);</span>
+
+								}
+							}
+
+						}
+					}
+
+<span class="nc" id="L126">				} else {</span>
+<span class="nc" id="L127">					throw new StockNotAvailableException(&quot;wishlist.STOCK_NOT_AVAILABLE&quot;);</span>
+				}
+
+			} else {
+<span class="nc bnc" id="L131" title="All 2 branches missed.">				if (quantity &lt; 10) {</span>
+<span class="nc" id="L132">					final String baseUrl = productAPIURI + wishlist.getProdId();</span>
+<span class="nc" id="L133">					ResponseEntity&lt;Product&gt; result = restTemplate.getForEntity(baseUrl, Product.class);</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">					if (result.getBody().getStock() &gt;= quantity) {</span>
+
+<span class="nc" id="L136">						Cart cart = new Cart(wishlist.getBuyerId(), wishlist.getProdId(), quantity);</span>
+
+<span class="nc" id="L138">						List&lt;Cart&gt; cartlist = cartController.getAllCartItem(wishlist.getBuyerId());</span>
+
+<span class="nc bnc" id="L140" title="All 2 branches missed.">						if (cartlist.size() == 0) {</span>
+<span class="nc" id="L141">							removeFromWishList(wishlist);</span>
+<span class="nc" id="L142">							cartController.addToCart(cart);</span>
+<span class="nc" id="L143">						} else {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">							for (Cart cart2 : cartlist) {</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">								if (cart2.getProdId() == wishlist.getProdId()) {</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">									if (cart2.getQuantity() + quantity &lt;= result.getBody().getStock() &amp;&amp; cart2.getQuantity() + quantity&lt;=10 ) {</span>
+<span class="nc" id="L147">										removeFromWishList(wishlist);</span>
+<span class="nc" id="L148">										cart2.setQuantity(cart2.getQuantity() + quantity);</span>
+<span class="nc" id="L149">										cartController.addToCart(cart2);</span>
+										
+
+<span class="nc" id="L152">									} else {</span>
+<span class="nc" id="L153">										throw new StockNotAvailableException(&quot;wishlist.STOCK_NOT_AVAILABLE&quot;);</span>
+
+									}
+								}
+
+							}
+						}
+
+<span class="nc" id="L161">					} else {</span>
+<span class="nc" id="L162">						throw new StockNotAvailableException(&quot;wishlist.STOCK_NOT_AVAILABLE&quot;);</span>
+					}
+
+				} else {
+<span class="nc" id="L166">					throw new NotPrivilegeBuyerException(&quot;wishlist.NOT_PRIVILEGE_BUYER&quot;);</span>
+				}
+
+			}
+		} else {
+<span class="nc" id="L171">			throw new WishlistNotAvailableException(&quot;wishlist.NOT_AVAILABLE&quot;);</span>
+		}
+
+<span class="nc" id="L174">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

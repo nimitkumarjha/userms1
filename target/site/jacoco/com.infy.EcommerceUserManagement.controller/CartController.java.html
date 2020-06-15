@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CartController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EcommerceUserManagement</a> &gt; <a href="index.source.html" class="el_package">com.infy.EcommerceUserManagement.controller</a> &gt; <span class="el_source">CartController.java</span></div><h1>CartController.java</h1><pre class="source lang-java linenums">package com.infy.EcommerceUserManagement.controller;
+
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import com.infy.EcommerceUserManagement.exception.UserException;
+import com.infy.EcommerceUserManagement.model.Cart;
+import com.infy.EcommerceUserManagement.service.CartService;
+
+@RestController
+<span class="fc" id="L22">public class CartController {</span>
+
+	@Autowired
+	CartService cartService;
+
+	@Autowired
+	Environment environment;
+
+<span class="fc" id="L30">	private static final Logger LOGGER = LoggerFactory.getLogger(CartController.class);</span>
+
+	@PostMapping(value = &quot;api/cart/add&quot;)
+	public ResponseEntity&lt;String&gt; addToCart(@RequestBody Cart cart) throws UserException {
+<span class="nc" id="L34">		ResponseEntity&lt;String&gt; responseEntity = null;</span>
+		try {
+<span class="nc" id="L36">			cartService.addToCart(cart);</span>
+<span class="nc" id="L37">			String successMessage = environment.getProperty(&quot;cart.ADD_SUCCESS&quot;);</span>
+<span class="nc" id="L38">			responseEntity = new ResponseEntity&lt;String&gt;(successMessage, HttpStatus.OK);</span>
+<span class="nc" id="L39">		} catch (Exception exception) {</span>
+<span class="nc" id="L40">			LOGGER.error(&quot;Error: &quot; + exception.getMessage(), exception);</span>
+		}
+<span class="nc" id="L42">		return responseEntity;</span>
+	}
+
+	@DeleteMapping(value = &quot;api/cart/remove&quot;)
+	public ResponseEntity&lt;String&gt; removeFromCart(@RequestBody Cart cart) {
+<span class="nc" id="L47">		ResponseEntity&lt;String&gt; responseEntity = null;</span>
+		try {
+<span class="nc" id="L49">			cartService.removeFromCart(cart);</span>
+<span class="nc" id="L50">			String successMessage = environment.getProperty(&quot;cart.REMOVE_SUCCESS&quot;);</span>
+<span class="nc" id="L51">			responseEntity = new ResponseEntity&lt;String&gt;(successMessage, HttpStatus.OK);</span>
+
+<span class="nc" id="L53">		} catch (Exception exception) {</span>
+<span class="nc" id="L54">			LOGGER.error(&quot;Error: &quot; + exception.getMessage(), exception);</span>
+		}
+<span class="nc" id="L56">		return responseEntity;</span>
+	}
+
+	@GetMapping(value = &quot;api/cart/{buyerId}&quot;)
+	public List&lt;Cart&gt; getAllCartItem(@PathVariable int buyerId) {
+<span class="nc" id="L61">		return cartService.getAllCartItem(buyerId);</span>
+	}
+
+	@GetMapping(value = &quot;api/cart/checkout/{buyerId}&quot;)
+	public List&lt;Cart&gt; checkOutFromCart(@PathVariable int buyerId) {
+<span class="nc" id="L66">		return cartService.checkOutFromCart(buyerId);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

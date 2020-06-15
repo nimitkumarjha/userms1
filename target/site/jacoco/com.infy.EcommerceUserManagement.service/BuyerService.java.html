@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BuyerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EcommerceUserManagement</a> &gt; <a href="index.source.html" class="el_package">com.infy.EcommerceUserManagement.service</a> &gt; <span class="el_source">BuyerService.java</span></div><h1>BuyerService.java</h1><pre class="source lang-java linenums">package com.infy.EcommerceUserManagement.service;
+
+import java.util.regex.Pattern;
+
+import javax.naming.InvalidNameException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Service;
+import com.infy.EcommerceUserManagement.dao.BuyerRepository;
+import com.infy.EcommerceUserManagement.entity.BuyerEntity;
+import com.infy.EcommerceUserManagement.exception.*;
+import com.infy.EcommerceUserManagement.model.Buyer;
+
+@Service
+@PropertySource(value = { &quot;classpath:configuration.properties&quot; })
+<span class="fc" id="L20">public class BuyerService {</span>
+	
+<span class="fc" id="L22">	private static final Logger LOGGER = LoggerFactory.getLogger(BuyerService.class);</span>
+
+	@Autowired
+	BuyerRepository buyerRepository;
+
+	public void buyerRegisterion(Buyer buyer) throws Exception {
+<span class="nc" id="L28">		LOGGER.info(&quot;Buyer details are going to validate&quot;);</span>
+<span class="nc" id="L29">		validateBuyer(buyer);</span>
+<span class="nc" id="L30">		LOGGER.info(&quot;Buyer details are validated successfully&quot;);</span>
+<span class="nc" id="L31">		BuyerEntity buyerEntity = new BuyerEntity();</span>
+<span class="nc" id="L32">		BeanUtils.copyProperties(buyer, buyerEntity);</span>
+<span class="nc" id="L33">		buyerRepository.save(buyerEntity);</span>
+<span class="nc" id="L34">		LOGGER.info(&quot;Buyer details are saved in DB successfully&quot;);</span>
+		
+<span class="nc" id="L36">	}</span>
+
+	private void validateBuyer(Buyer buyer) throws Exception {
+<span class="nc" id="L39">		LOGGER.info(&quot;Buyer details are being validated&quot;);</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">		if(!isValidName(buyer.getName()))</span>
+<span class="nc" id="L41">			throw new InvalidNameException(&quot;BuyerRegistration.INVALID_NAME&quot;);</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if(!isValidEmail(buyer.getEmail()))</span>
+<span class="nc" id="L43">			throw new InvalidEmailIdException(&quot;BuyerRegistration.INVALID_EMAIL&quot;);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		if(!isValidPhoneNumber(buyer.getPhoneNumber()))</span>
+<span class="nc" id="L45">			throw new InvalidPhoneNumberException(&quot;BuyerRegistration.INVALID_PHONENUMBER&quot;);</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		if(!isvalidPassword(buyer.getPassword()))</span>
+<span class="nc" id="L47">			throw new InvalidPasswordException(&quot;BuyerRegistration.INVALID_PASSWORD&quot;);</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">		if(!isAlreadyPhoneNumberExist(buyer.getPhoneNumber()))</span>
+<span class="nc" id="L49">			throw new AlreadyPhoneNumberExistException(&quot;BuyerRegistration.ALREADY_PH_EXISTS&quot;);</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">		if(!isAlreadyEmailIdExist(buyer.getEmail()))</span>
+<span class="nc" id="L51">			throw new AlreadyEmailIdExistException(&quot;BuyerRegistration.ALREADY_EMAIL_EXISTS&quot;);</span>
+		
+		
+<span class="nc" id="L54">	}</span>
+
+	private boolean isAlreadyEmailIdExist(String email) {
+<span class="nc" id="L57">		BuyerEntity buyerEntity=buyerRepository.findByEmail(email);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">		if (buyerEntity!=null)</span>
+<span class="nc" id="L59">			return false;</span>
+<span class="nc" id="L60">		return true;</span>
+	}
+
+	private boolean isAlreadyPhoneNumberExist(String phoneNumber) {
+<span class="nc" id="L64">		BuyerEntity buyerEntity=buyerRepository.findByPhoneNumber(phoneNumber);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">		if (buyerEntity!=null)</span>
+<span class="nc" id="L66">			return false;</span>
+<span class="nc" id="L67">		return true;</span>
+	}
+
+	private boolean isvalidPassword(String password) {
+<span class="nc" id="L71">		return Pattern.matches(&quot;(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*]).{7,20}$&quot;,password);</span>
+	}
+
+	private boolean isValidPhoneNumber(String phoneNumber) {
+<span class="nc" id="L75">		return Pattern.matches(&quot;^\\d{10}$&quot;, phoneNumber);</span>
+	}
+
+	private boolean isValidEmail(String email) {
+<span class="nc" id="L79">		return Pattern.matches(&quot;^[A-Za-z0-9+_.-]+@(.+)$&quot;,email);</span>
+	}
+
+	private boolean isValidName(String name) {
+<span class="nc" id="L83">		return Pattern.matches(&quot;^[a-zA-Z]+[-a-zA-Z\\s]+([-a-zA-Z]+)$&quot;, name);</span>
+	}
+	
+	
+
+	public void buyerLogin(Buyer buyer) throws Exception {
+
+<span class="nc" id="L90">		BuyerEntity buyerEntity = buyerRepository.findByEmail(buyer.getEmail());</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">		if (buyerEntity != null) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">			if (buyerEntity.getPassword().equals(buyer.getPassword())) {</span>
+				
+			} else {
+<span class="nc" id="L95">				throw new WrongPasswordException(&quot;BuyerLogin.INVALID_PASSWORD&quot;);</span>
+			}
+
+		} else {
+<span class="nc" id="L99">			throw new WrongEmailException(&quot;BuyerLogin.INVALID_EMAILID&quot;);</span>
+		}
+
+<span class="nc" id="L102">	}</span>
+
+	public void deactivateBuyer(Buyer buyer) throws Exception {
+<span class="nc" id="L105">		BuyerEntity buyerEntity = buyerRepository.findByEmail(buyer.getEmail());</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">		if (buyerEntity != null) {</span>
+<span class="nc" id="L107">			buyerEntity.setActive(false);</span>
+<span class="nc" id="L108">			buyerRepository.save(buyerEntity);	</span>
+<span class="nc" id="L109">		} else {</span>
+<span class="nc" id="L110">			throw new InvalidEmailIdException(&quot;Buyer.INVALID_EMAIL&quot;);</span>
+		}
+<span class="nc" id="L112">	}</span>
+	
+	public int getRewardPoint(int buyerId) {
+<span class="nc" id="L115">		System.out.println(&quot;inside buyer service&quot;+buyerId);</span>
+<span class="nc" id="L116">		BuyerEntity buyerEntity=buyerRepository.findByBuyerId(buyerId);</span>
+<span class="nc" id="L117">		System.out.println(buyerEntity);</span>
+<span class="nc" id="L118">		return buyerEntity.getRewardPoints();		</span>
+	}
+	
+	public void updateRewardPoint(int buyerId, int point) {
+<span class="nc" id="L122">		BuyerEntity buyerEntity =buyerRepository.findByBuyerId(buyerId);</span>
+<span class="nc" id="L123">		buyerEntity.setRewardPoints(point);</span>
+<span class="nc" id="L124">		buyerRepository.save(buyerEntity);		</span>
+<span class="nc" id="L125">	}</span>
+	
+	public boolean IsPrivileged(int buyerId) {
+<span class="nc" id="L128">		BuyerEntity buyerEntity= buyerRepository.findByBuyerId(buyerId);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">		if((buyerEntity.isPrivileged())==false) {	</span>
+<span class="nc" id="L130">			return false;</span>
+		}
+		else {
+<span class="nc" id="L133">			return true;</span>
+		}
+	}
+	
+	public void updateBuyerPrivilege(String email,boolean privilege) throws Exception {
+<span class="nc" id="L138">		BuyerEntity buyerEntity= buyerRepository.findByEmail(email);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">		if(buyerEntity!=null){</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">			if(buyerEntity.isPrivileged()) {</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">				if(!privilege) {</span>
+<span class="nc" id="L142">					buyerEntity.setPrivileged(true);</span>
+<span class="nc" id="L143">				    buyerRepository.save(buyerEntity);				</span>
+<span class="nc" id="L144">				}</span>
+				else {
+<span class="nc" id="L146">				throw new AlreadyPrivilegeException(&quot;Buyer.ALREADY_PRIVILEGE&quot;);</span>
+				}
+			}
+<span class="nc bnc" id="L149" title="All 2 branches missed.">			else if(!(buyerEntity.isPrivileged())) {</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">				if(privilege) {</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">					if(buyerEntity.getRewardPoints()&lt;10000) {</span>
+<span class="nc" id="L152">						throw new InSufficientRewardPoint(&quot;Buyer.INSUFFICIENT_REWARD_POINTS&quot;);</span>
+					}
+					else {
+<span class="nc" id="L155">						buyerEntity.setPrivileged(privilege);</span>
+<span class="nc" id="L156">						buyerEntity.setRewardPoints(buyerEntity.getRewardPoints()-10000);</span>
+<span class="nc" id="L157">						buyerRepository.save(buyerEntity);</span>
+					}
+<span class="nc" id="L159">				}</span>
+				else {
+<span class="nc" id="L161">					throw new AlreadyNotPrivilegeException(&quot;Buyer.ALREADY_NOT_PRIVILEGE&quot;);			</span>
+				}
+			}
+<span class="nc" id="L164">		buyerEntity.setPrivileged(privilege);</span>
+<span class="nc" id="L165">	    buyerRepository.save(buyerEntity);</span>
+<span class="nc" id="L166">		}</span>
+		else {
+<span class="nc" id="L168">			throw new InvalidEmailIdException(&quot;Buyer.INVALID_EMAIL&quot;);</span>
+		}
+<span class="nc" id="L170">	}</span>
+	
+	public Buyer getBuyerDetails(String email) throws Exception {
+<span class="nc" id="L173">		BuyerEntity buyerEntity= buyerRepository.findByEmail(email);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">		if(buyerEntity!=null) {</span>
+<span class="nc" id="L175">		Buyer buyer=new Buyer();</span>
+<span class="nc" id="L176">		BeanUtils.copyProperties(buyerEntity, buyer);</span>
+<span class="nc" id="L177">		return buyer;</span>
+		}
+		else {
+<span class="nc" id="L180">			throw new InvalidEmailIdException(&quot;Buyer.INVALID_EMAIL&quot;);</span>
+		}		
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BuyerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EcommerceUserManagement</a> &gt; <a href="index.source.html" class="el_package">com.infy.EcommerceUserManagement.controller</a> &gt; <span class="el_source">BuyerController.java</span></div><h1>BuyerController.java</h1><pre class="source lang-java linenums">package com.infy.EcommerceUserManagement.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.infy.EcommerceUserManagement.model.Buyer;
+import com.infy.EcommerceUserManagement.service.BuyerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+@RestController
+@PropertySource(&quot;classpath:configuration.properties&quot;)
+<span class="fc" id="L24">public class BuyerController {</span>
+
+	@Autowired
+	BuyerService buyerservice;
+
+	@Autowired
+	Environment environment;
+
+<span class="fc" id="L32">	private static final Logger LOGGER = LoggerFactory.getLogger(BuyerController.class);</span>
+
+	@PostMapping(value = &quot;api/buyer/register&quot;)
+	public ResponseEntity&lt;String&gt; registerBuyer(@RequestBody Buyer buyer) {
+<span class="nc" id="L36">		ResponseEntity&lt;String&gt; responseEntity = null;</span>
+		try {		
+<span class="nc" id="L38">			LOGGER.info(&quot;Buyer Registration is being done by &quot;+buyer.getName());</span>
+<span class="nc" id="L39">			buyer.setActive(true);</span>
+<span class="nc" id="L40">			buyer.setPrivileged(false);</span>
+<span class="nc" id="L41">			buyer.setRewardPoints(0);</span>
+<span class="nc" id="L42">			buyerservice.buyerRegisterion(buyer);</span>
+<span class="nc" id="L43">			String successMessage = environment.getProperty(&quot;BuyerRegistration.REGISTRATION_SUCCESS&quot;);</span>
+<span class="nc" id="L44">			responseEntity = new ResponseEntity&lt;String&gt;(successMessage, HttpStatus.OK);</span>
+<span class="nc" id="L45">		} catch (Exception exception) {</span>
+<span class="nc" id="L46">			return null;</span>
+		}
+<span class="nc" id="L48">		return responseEntity;</span>
+	}
+
+	@PostMapping(value = &quot;api/buyer/login&quot;)
+	public ResponseEntity&lt;String&gt; buyerLogin(@RequestBody Buyer buyer) {
+<span class="nc" id="L53">		ResponseEntity&lt;String&gt; responseEntity = null;</span>
+		try {
+<span class="nc" id="L55">			buyerservice.buyerLogin(buyer);</span>
+<span class="nc" id="L56">			String successMessage = environment.getProperty(&quot;BuyerLogin.LOGIN_SUCCESS&quot;);</span>
+<span class="nc" id="L57">			responseEntity = new ResponseEntity&lt;String&gt;(successMessage, HttpStatus.OK);</span>
+<span class="nc" id="L58">		} catch (Exception exception) {</span>
+<span class="nc" id="L59">			return null;</span>
+			}
+<span class="nc" id="L61">		return responseEntity;</span>
+	}
+
+	
+
+	@PostMapping(value = &quot;api/buyer/deactivate&quot;)
+	public ResponseEntity&lt;String&gt; deactivateBuyer(@RequestBody Buyer buyer) {
+<span class="nc" id="L68">		ResponseEntity&lt;String&gt; responseEntity = null;</span>
+		try {
+<span class="nc" id="L70">			buyerservice.deactivateBuyer(buyer);</span>
+<span class="nc" id="L71">			String successMessage = environment.getProperty(&quot;Buyer.DEACTIVATE_SUCCESS&quot;);</span>
+<span class="nc" id="L72">			responseEntity = new ResponseEntity&lt;String&gt;(successMessage, HttpStatus.OK);</span>
+<span class="nc" id="L73">		} catch (Exception exception) {</span>
+<span class="nc" id="L74">			return null;</span>
+		}
+<span class="nc" id="L76">		return responseEntity;</span>
+	}
+	
+	
+	@PutMapping(value = &quot;api/buyer/privilege/{email}/{privilege}&quot;)
+	public ResponseEntity&lt;String&gt; updateBuyerPrivilege(@PathVariable String email ,@PathVariable boolean privilege) {
+<span class="nc" id="L82">		ResponseEntity&lt;String&gt; responseEntity = null;</span>
+		try {
+<span class="nc" id="L84">			buyerservice.updateBuyerPrivilege(email, privilege);</span>
+<span class="nc" id="L85">			String successMessage = environment.getProperty(&quot;Buyer.PRIVILEGE_UPDATE_SUCCESS&quot;);</span>
+<span class="nc" id="L86">			responseEntity = new ResponseEntity&lt;String&gt;(successMessage, HttpStatus.OK);</span>
+<span class="nc" id="L87">		} catch (Exception exception) {</span>
+<span class="nc" id="L88">			return null;	</span>
+			}
+<span class="nc" id="L90">		return responseEntity;</span>
+	}
+	
+	
+	
+	
+	
+	@GetMapping(value = &quot;api/rewardPoint/{buyerId}&quot;)
+	public int getRewardPoints(@PathVariable int buyerId) {
+<span class="nc" id="L99">		System.out.println(&quot;inside buyer controller :&quot;+ buyerId);</span>
+<span class="nc" id="L100">		return buyerservice.getRewardPoint(buyerId);</span>
+
+	}
+
+	@PutMapping(value = &quot;api/rewardPoint/update/{buyerId}/{point}&quot;)
+	public void updateRewardPoint(@PathVariable int buyerId,@PathVariable int point) {
+<span class="nc" id="L106">		buyerservice.updateRewardPoint(buyerId, point);</span>
+<span class="nc" id="L107">	}</span>
+
+	@GetMapping(value = &quot;api/buyer/isPrivilege/{buyerId}&quot;)
+	public boolean isBuyerPrivileged(@PathVariable int buyerId) {
+<span class="nc" id="L111">		System.out.println(&quot;inside buyer privilege&quot;);</span>
+<span class="nc" id="L112">		return buyerservice.IsPrivileged(buyerId);</span>
+	}
+
+	
+
+	@GetMapping(value = &quot;api/buyer/{email}&quot;)
+	public ResponseEntity&lt;String&gt; getBuyerDetails(@PathVariable String email) {
+<span class="nc" id="L119">		ResponseEntity&lt;String&gt; responseEntity = null;</span>
+		try {
+<span class="nc" id="L121">			String successMessage =buyerservice.getBuyerDetails(email).toString();</span>
+<span class="nc" id="L122">			responseEntity = new ResponseEntity&lt;String&gt;(successMessage, HttpStatus.OK);</span>
+<span class="nc" id="L123">		} catch (Exception exception) {</span>
+<span class="nc" id="L124">			return null;</span>
+		}
+<span class="nc" id="L126">		return responseEntity;</span>
+	} 
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

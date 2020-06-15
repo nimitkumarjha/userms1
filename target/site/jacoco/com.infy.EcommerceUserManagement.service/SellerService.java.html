@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SellerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EcommerceUserManagement</a> &gt; <a href="index.source.html" class="el_package">com.infy.EcommerceUserManagement.service</a> &gt; <span class="el_source">SellerService.java</span></div><h1>SellerService.java</h1><pre class="source lang-java linenums">package com.infy.EcommerceUserManagement.service;
+
+import java.util.regex.Pattern;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+
+import com.infy.EcommerceUserManagement.dao.SellerRepository;
+import com.infy.EcommerceUserManagement.entity.BuyerEntity;
+import com.infy.EcommerceUserManagement.entity.SellerEntity;
+import com.infy.EcommerceUserManagement.exception.AlreadyEmailIdExistException;
+import com.infy.EcommerceUserManagement.exception.AlreadyPhoneNumberExistException;
+import com.infy.EcommerceUserManagement.exception.InvalidEmailIdException;
+import com.infy.EcommerceUserManagement.exception.InvalidNameException;
+import com.infy.EcommerceUserManagement.exception.InvalidPasswordException;
+import com.infy.EcommerceUserManagement.exception.InvalidPhoneNumberException;
+import com.infy.EcommerceUserManagement.exception.UserException;
+import com.infy.EcommerceUserManagement.exception.WrongEmailException;
+import com.infy.EcommerceUserManagement.exception.WrongPasswordException;
+import com.infy.EcommerceUserManagement.model.Seller;
+
+
+
+@Service
+<span class="fc" id="L27">public class SellerService {</span>
+	
+	@Autowired
+	SellerRepository sellerRepository;
+
+	public void sellerRegisterion(Seller seller) throws UserException {
+<span class="nc" id="L33">		validateSeller(seller);</span>
+<span class="nc" id="L34">		SellerEntity sellerEntity = new SellerEntity();</span>
+<span class="nc" id="L35">		BeanUtils.copyProperties(seller, sellerEntity);</span>
+<span class="nc" id="L36">		sellerRepository.save(sellerEntity);</span>
+<span class="nc" id="L37">	}</span>
+	
+	private void validateSeller(Seller seller) throws UserException {
+		// TODO Auto-generated method stub
+		
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if(!isValidName(seller.getName()))</span>
+<span class="nc" id="L43">			throw new InvalidNameException(&quot;BuyerRegistration.INVALID_NAME&quot;);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		if(!isValidEmail(seller.getEmail()))</span>
+<span class="nc" id="L45">			throw new InvalidEmailIdException(&quot;BuyerRegistration.INVALID_EMAIL&quot;);</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		if(!isValidPhoneNumber(seller.getphoneNumber()))</span>
+<span class="nc" id="L47">			throw new InvalidPhoneNumberException(&quot;BuyerRegistration.INVALID_PHONENUMBER&quot;);</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">		if(!isvalidPassword(seller.getPassword()))</span>
+<span class="nc" id="L49">			throw new InvalidPasswordException(&quot;BuyerRegistration.INVALID_PASSWORD&quot;);</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">		if(!isAlreadyPhoneNumberExist(seller.getphoneNumber()))</span>
+<span class="nc" id="L51">			throw new AlreadyPhoneNumberExistException(&quot;BuyerRegistration.ALREADY_PH_EXISTS&quot;);</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">		if(!isAlreadyEmailIdExist(seller.getEmail()))</span>
+<span class="nc" id="L53">			throw new AlreadyEmailIdExistException(&quot;BuyerRegistration.ALREADY_EMAIL_EXISTS&quot;);</span>
+		
+<span class="nc" id="L55">	}</span>
+
+	private boolean isAlreadyEmailIdExist(String email) {
+		// TODO Auto-generated method stub
+<span class="nc" id="L59">		SellerEntity sellerEntity=sellerRepository.findByEmail(email);</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">		if (sellerEntity!=null)</span>
+<span class="nc" id="L61">			return false;</span>
+<span class="nc" id="L62">		return true;</span>
+	}
+
+	private boolean isAlreadyPhoneNumberExist(String phoneNumber) {
+		// TODO Auto-generated method stub
+<span class="nc" id="L67">		SellerEntity sellerEntity=sellerRepository.findByPhoneNumber(phoneNumber);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">		if (sellerEntity!=null)</span>
+<span class="nc" id="L69">			return false;</span>
+<span class="nc" id="L70">		return true;</span>
+	}
+
+	private boolean isvalidPassword(String password) {
+		// TODO Auto-generated method stub
+<span class="nc" id="L75">		return Pattern.matches(&quot;(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*]).{7,20}$&quot;,password);</span>
+	}
+
+	private boolean isValidPhoneNumber(String phoneNumber) {
+		// TODO Auto-generated method stub
+<span class="nc" id="L80">		return Pattern.matches(&quot;^\\d{10}$&quot;, phoneNumber);</span>
+	}
+
+	private boolean isValidEmail(String email) {
+		// TODO Auto-generated method stub
+<span class="nc" id="L85">		return Pattern.matches(&quot;^[A-Za-z0-9+_.-]+@(.+)$&quot;,email);</span>
+	}
+
+	private boolean isValidName(String name) {
+		// TODO Auto-generated method stub
+<span class="nc" id="L90">		return Pattern.matches(&quot;^[a-zA-Z]+[-a-zA-Z\\s]+([-a-zA-Z]+)$&quot;, name);</span>
+	}
+	
+	
+
+	public void sellerLogin(Seller  seller) throws UserException {
+<span class="nc" id="L96">		SellerEntity sellerEntity=sellerRepository.findByEmail(seller.getEmail());</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">		if(sellerEntity!= null) {</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">			if(sellerEntity.getPassword().equals(seller.getPassword())) {</span>
+				
+			}
+			else {
+<span class="nc" id="L102">				throw new WrongPasswordException(&quot;BuyerLogin.INVALID_PASSWORD&quot;);</span>
+			}
+			
+		}
+		else {
+<span class="nc" id="L107">			throw new WrongEmailException(&quot;BuyerLogin.INVALID_EMAILID&quot;);</span>
+		}
+<span class="nc" id="L109">	}</span>
+	
+	
+	public void deactivateSeller(Seller seller) throws UserException {
+<span class="nc" id="L113">		SellerEntity sellerEntity=sellerRepository.findByEmail(seller.getEmail());</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">		if(sellerEntity!= null) {</span>
+<span class="nc" id="L115">			sellerEntity.setActive(false);</span>
+<span class="nc" id="L116">			sellerRepository.save(sellerEntity);</span>
+			
+<span class="nc" id="L118">		}</span>
+		else {
+<span class="nc" id="L120">			throw new WrongEmailException(&quot;BuyerLogin.INVALID_EMAILID&quot;);</span>
+		}
+				
+<span class="nc" id="L123">	}</span>
+	
+	public Seller getSellerDetails(String email) throws UserException {
+<span class="nc" id="L126">		SellerEntity sellerEntity=sellerRepository.findByEmail(email);</span>
+<span class="nc" id="L127">		Seller seller = new Seller();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">		if(sellerEntity!= null) {</span>
+		
+<span class="nc" id="L130">		BeanUtils.copyProperties(sellerEntity, seller);</span>
+<span class="nc" id="L131">		return seller;</span>
+		}
+		else {
+<span class="nc" id="L134">			throw new WrongEmailException(&quot;BuyerLogin.INVALID_EMAILID&quot;);</span>
+			
+		}
+	}
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
